@@ -3,7 +3,7 @@
 version: 2.1
 orbs:
   node: circleci/node@5
-  node: circleci/docker@2.1.4
+  docker: circleci/docker@2.1.4
 jobs:
   build:
     docker: 
@@ -13,8 +13,10 @@ jobs:
       - node/install-packages:
           pkg-manager: npm
       - run:
-        echo "Installing dependencies..."
-        npm install
+          name: Install dependencies
+          command: |
+            echo "Installing dependencies..."
+            npm install
   test:
     docker:
       - image: cimg/node:16.10
@@ -22,15 +24,20 @@ jobs:
         - checkout
         - node/install-packages:
             pkg-manager: npm
-        - run: 
+        - run:
+          name: Run tests
+          command: |
             echo "Running tests..."
             npm run test
   build-and-push:
-    executor: docker/docker
+    docker:
+      - image: cimg/node:16.10
     steps:
       - setup_remote_docker
       - checkout
-      - docker/check
+      - docker/login:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
       - docker/build:
           image: arunal18/education-space
       - docker/push:
