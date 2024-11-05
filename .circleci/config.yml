@@ -17,18 +17,20 @@ jobs:
           command: |
             echo "Installing dependencies..."
             npm install
+
   test:
     docker:
       - image: cimg/node:16.10
-      steps:
-        - checkout
-        - node/install-packages:
-            pkg-manager: npm
-        - run:
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
           name: Run tests
           command: |
             echo "Running tests..."
             npm run test
+
   build-and-push:
     docker:
       - image: cimg/node:16.10
