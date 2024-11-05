@@ -37,9 +37,10 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
-      - docker/login:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+      - run:
+          name: Log in to Docker Hub
+          command: |
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_LOGIN" --password-stdin
       - docker/build:
           image: arunal18/education-space
       - docker/push:
