@@ -3,23 +3,38 @@
 version: 2.1
 orbs:
   node: circleci/node@5
+  node: circleci/docker@2.1.4
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
+  build:
+    docker: 
+      - image: cimg/node:16.10
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
       - run:
-          command: npm install jest-junit
-      - run:
-          name: Run tests
-          command: npm run test --ci --runInBand --reporters=default --reporters=jest-junit
-      - store_test_results:
-          path: ./test-results/
+        echo "Installing dependencies..."
+        npm install
+  test:
+    docker:
+      - image: cimg/node:16.10
+      steps:
+        - checkout
+        - node/install-packages:
+            pkg-manager: npm
+        - run: 
+            echo "Running tests..."
+            npm run test
+  build-and-push:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: arunal18/education-space
+      - docker/push:
+          image: arunal18/education-space       
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:
@@ -30,9 +45,12 @@ jobs:
           name: deploy
           command: '#e.g. ./deploy.sh'
 workflows:
-  build-and-test:
+  simple_workflow:
     jobs:
-      - test-node
-    # - deploy:
-    #     requires:
-    #       - test-node
+      - build
+      - test:
+          requires:
+            - build
+      - build-and-push:
+          requires:
+            - test
